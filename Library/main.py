@@ -24,12 +24,17 @@ LABEL_BG = "#777777"
 UPDATE_DATA = "Редактировать данные"
 
 
+"""Класс для работы с базой данных"""
 class Database:
     def __init__(self, nameDB):
-        self.db = sqlite3.connect(nameDB)  # Если файл не был создал или открыт по дефолту создастся файл database.txt
+        self.db = sqlite3.connect(nameDB)
         self.cursor = self.db.cursor()
 
     def create_table(self, table):
+        """
+        Метод создания таблицы
+        принимает название таблицы и текущий объект класса
+        """
         self.cursor.execute(f"CREATE TABLE IF NOT EXISTS '{table}' (\
                             book_id INTEGER PRIMARY KEY, \
                             book_name TEXT, \
@@ -37,23 +42,28 @@ class Database:
                             price INTEGER)")
 
     def save(self):
+        """
+        Метод сохранения таблицы
+        принимает текущий объект класса
+        """
         self.db.commit()
 
     def get_table(self, table):
         return [i for i in self.cursor.execute(f"SELECT * FROM {table}")]
 
 
+"""Класс для работы с окнами"""
 class Window:
     def __init__(self):
         self.window = Tk()
         self.window.title(WINDOW_TITLE)
         self.window.geometry(WINDOW_GEOMERTY)
         self.window["bg"] = WINDOW_COLOR
-        self.id_book = StringVar()  # Присваивает строку из виджета поля для ввода текста
+        self.id_book = StringVar()
         self.name_book = StringVar()
         self.author = StringVar()
         self.book_price = StringVar()
-        self.id_book_del = StringVar()  # примечание разработчика переменная возможно не нужена
+        self.id_book_del = StringVar()
         self.background_image = PhotoImage(file="LNT.png")
         self.upd_book_name = StringVar()
         self.upd_author = StringVar()
@@ -62,6 +72,10 @@ class Window:
         self.main_menu()
 
     def show_data(self):
+        """
+        Метод отображает окно содержимого базы данных
+        принимает текущий объект класса
+        """
         db = Database(nameDB)
         win = Toplevel(self.window)
         win.geometry('500x250')
@@ -81,21 +95,33 @@ class Window:
                 b.grid(row=i+1, column=j)
 
     def top_menu(self):
-        menu = Menu(self.window)  # создаем объект меню для секций
+        """
+        Метод создания верхнего меню
+        Принимает текущий объект класса
+        """
+        menu = Menu(self.window)
         menu.add_cascade(label=TEXT_CREATE_FILE, command=creat_db)
         menu.add_cascade(label=TEXT_OPEN_FILE, command=open_db)
         menu.add_cascade(label=SHOW_DATA, command=self.show_data)
         menu.add_cascade(label=UPDATE_DATA, command=self.editing_window)
-        menu.add_cascade(label="О программе", command=lambda: messagebox.showinfo("О программе", "Разработал Митюшин Пётр и Андрей Слепов."))  # Меню о программе добавляется на панель меню
-        self.window.config(menu=menu)  # доступ к атрибуту объекта после его инициализации
+        menu.add_cascade(label="О программе", command=lambda: messagebox.showinfo("О программе", "Разработал Митюшин Пётр и Андрей Слепов."))
+        self.window.config(menu=menu)
 
-    def create_label(self, text_label, x_label, y_label):   # Функция принимает строку и координаты
-        Label(text=text_label, bg=LABEL_BG).place(x=x_label, y=y_label)  # Отображает текст в окне по переданным координатам
+    def create_label(self, text_label, x_label, y_label):
+        """
+        Метод, помогающий создавать текстовые поля
+        Принимает название поля и его координаты и текущий объект класса
+        """
+        Label(text=text_label, bg=LABEL_BG).place(x=x_label, y=y_label)
 
     def main_menu(self):  # Функция отображения полей ввода в главном меню
+        """
+        Метод создания главного меню
+        Принимает текущий объект класса
+        """
         global idb
-        self.create_label(LABEL_ID_BOOK, 40, 0)  # Отображаем текст хранящейся в переменной label_id_book
-        idb = Entry(width=20, textvariable=self.id_book).place(x=5, y=20) # Определим элемент Entry который представляет собой поле для ввода текста
+        self.create_label(LABEL_ID_BOOK, 40, 0)
+        idb = Entry(width=20, textvariable=self.id_book).place(x=5, y=20)
 
         self.create_label(LABEL_NAME_BOOK, 20, 40)
         book = Entry(width=20, textvariable=self.name_book).place(x=5, y=60)
@@ -117,6 +143,10 @@ class Window:
         background = Label(self.window, image=self.background_image, width=100, height=108).place(x=160, y=5)
 
     def editing_window(self):
+        """
+        Метод создания окна изменения содержимого базы данных
+        принимает текущий объект класса
+        """
         global lb
         global win_update
         db = Database(nameDB)
@@ -135,7 +165,11 @@ class Window:
         change_button = Button(win_update, text="Изменить", bg=BUTTON_COLOR, activebackground=ACT_BUTTON_COLOR,
                              command=self.create_upd_window).place(x=400, y=200)
 
-    def create_upd_window(self):    #
+    def create_upd_window(self):
+        """
+        Метод создания окна обновления содержимого базы данных
+        принимает текущий объект класса
+        """
         global win_update
         upd_window = Toplevel(win_update)
         upd_window.geometry('450x100')
@@ -153,7 +187,10 @@ class Window:
                              command=update_data).place(x=400, y=42)
 
 
-def update_data():  # Редактирование данных
+def update_data():
+    """
+    Метод редактирования данных
+    """
     db = Database(nameDB)
     try:
         selection = lb.curselection()
@@ -174,7 +211,10 @@ def update_data():  # Редактирование данных
     win_update.destroy()
 
 
-def creat_db():  # При вызове функции открывается диалоговое окно, где в поле имя файлов надо ввести имя файла которое вы хотите создать
+def creat_db():
+    """
+    Метод создания базы данных
+    """
     global nameDB
     path_db = filedialog.asksaveasfilename(initialdir="/", title="Select file", filetypes=(("database files", "*.db"), ("all files", "*.*")))
     nameDB = path_db
@@ -183,6 +223,9 @@ def creat_db():  # При вызове функции открывается д�
 
 
 def delete_book_by_id():
+    """
+    Метод удаления книги по id
+    """
     db = Database(nameDB)
     cursor = db.cursor
     cursor.execute('DELETE FROM {0} WHERE book_id = {1}'.format(NAMETABLE, window.id_book_del.get()))
@@ -190,6 +233,9 @@ def delete_book_by_id():
 
 
 def insert_data():
+    """
+    Метод добавления данных в базу данных
+    """
     db = Database(nameDB)
     if (str(window.id_book.get()).isdigit() and str(window.book_price.get()).isdigit()):
         db.cursor.execute("INSERT INTO books (book_id, book_name, author_name, price) VALUES (?,?,?,?)",
@@ -199,11 +245,14 @@ def insert_data():
         messagebox.showerror("Error", "Id and price can only contain numbers")
 
 
-def open_db():  # При вызове функции открывается диалоговое окно, где пользователь выбирает какой файл ему нужно открыть
+def open_db():
+    """
+    Метод открывания базы данных
+    """
     global nameDB
-    path_db = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(("database files", "*.db"), ("all files", "*.*")))  # op является путём и его надо передать в функции добавления и удаления из файла
+    path_db = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(("database files", "*.db"), ("all files", "*.*")))
     nameDB = path_db
 
 
 window = Window()
-mainloop()  # Отображает главное окно со всеми виджетами
+mainloop()
